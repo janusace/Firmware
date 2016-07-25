@@ -506,36 +506,6 @@ then
 	if ver hwcmp PX4FMU_V1
 	then
 	else
-		# XXX We need a better way for runtime eval of shell variables,
-		# but this works for now
-		if param compare SYS_COMPANION 10
-		then
-			frsky_telemetry start -d /dev/ttyS2
-		fi
-		if param compare SYS_COMPANION 921600
-		then
-			mavlink start -d /dev/ttyS2 -b 921600 -m onboard -r 80000 -x
-		fi
-		if param compare SYS_COMPANION 57600
-		then
-			mavlink start -d /dev/ttyS2 -b 57600 -m onboard -r 5000 -x
-		fi
-		if param compare SYS_COMPANION 157600
-		then
-			mavlink start -d /dev/ttyS2 -b 57600 -m osd -r 1000
-		fi
-		if param compare SYS_COMPANION 257600
-		then
-			mavlink start -d /dev/ttyS2 -b 57600 -m magic -r 5000 -x
-		fi
-		if param compare SYS_COMPANION 357600
-		then
-			mavlink start -d /dev/ttyS2 -b 57600 -r 1000
-		fi
-		if param compare SYS_COMPANION 1921600
-		then
-			mavlink start -d /dev/ttyS2 -b 921600 -r 20000
-		fi
 		# Sensors on the PWM interface bank
 		# clear pins 5 and 6
 		if param compare SENS_EN_LL40LS 1
@@ -910,6 +880,9 @@ unset TUNE_ERR
 
 # Boot is complete, inform MAVLink app(s) that the system is now fully up and running
 mavlink boot_complete
+
+sleep 25
+mavlink start -d /dev/ttyS2 -b 921600 -m onboard -r 80000 -x
 
 if [ $EXIT_ON_END == yes ]
 then
