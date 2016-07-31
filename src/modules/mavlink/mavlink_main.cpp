@@ -870,7 +870,7 @@ Mavlink::get_free_tx_buf()
         buf_free = 256;
 #endif
 
-		if (get_flow_control_enabled() && buf_free < FLOW_CONTROL_DISABLE_THRESHOLD) {
+		if (get_flow_control_enabled() && buf_free < FLOW_CONTROL_DISABLE_THRESHOLD && (_mode != MAVLINK_MODE_ONBOARD)) {
 			/* Disable hardware flow control:
 			 * if no successful write since a defined time
 			 * and if the last try was not the last successful write
