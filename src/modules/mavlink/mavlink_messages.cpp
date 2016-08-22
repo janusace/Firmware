@@ -92,10 +92,10 @@
 #include <uORB/uORB.h>
 
 
-static uint16_t cm_uint16_from_m_float(float m);
+//static uint16_t cm_uint16_from_m_float(float m);
 static void get_mavlink_mode_state(struct vehicle_status_s *status, uint8_t *mavlink_state,
 								   uint8_t *mavlink_base_mode, uint32_t *mavlink_custom_mode);
-
+/*
 uint16_t
 cm_uint16_from_m_float(float m)
 {
@@ -108,7 +108,7 @@ cm_uint16_from_m_float(float m)
 
 	return (uint16_t)(m * 100.0f);
 }
-
+*/
 void get_mavlink_mode_state(struct vehicle_status_s *status, uint8_t *mavlink_state,
 							uint8_t *mavlink_base_mode, uint32_t *mavlink_custom_mode)
 {
@@ -1018,22 +1018,22 @@ protected:
 };
 
 
-class MavlinkStreamGPSRawInt : public MavlinkStream
+class MavlinkStreamGPSRawCov : public MavlinkStream
 {
 public:
 	const char *get_name() const
 	{
-		return MavlinkStreamGPSRawInt::get_name_static();
+		return MavlinkStreamGPSRawCov::get_name_static();
 	}
 
 	static const char *get_name_static()
 	{
-		return "GPS_RAW_INT";
+		return "GPS_RAW_COV";
 	}
 
 	static uint8_t get_id_static()
 	{
-		return MAVLINK_MSG_ID_GPS_RAW_INT;
+		return MAVLINK_MSG_ID_GPS_RAW_COV;
 	}
 
     uint8_t get_id()
@@ -1043,12 +1043,12 @@ public:
 
 	static MavlinkStream *new_instance(Mavlink *mavlink)
 	{
-		return new MavlinkStreamGPSRawInt(mavlink);
+		return new MavlinkStreamGPSRawCov(mavlink);
 	}
 
 	unsigned get_size()
 	{
-		return MAVLINK_MSG_ID_GPS_RAW_INT_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+		return MAVLINK_MSG_ID_GPS_RAW_COV_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
 	}
 
 private:
@@ -1056,11 +1056,11 @@ private:
 	uint64_t _gps_time;
 
 	/* do not allow top copying this class */
-	MavlinkStreamGPSRawInt(MavlinkStreamGPSRawInt &);
-	MavlinkStreamGPSRawInt& operator = (const MavlinkStreamGPSRawInt &);
+	MavlinkStreamGPSRawCov(MavlinkStreamGPSRawCov &);
+	MavlinkStreamGPSRawCov& operator = (const MavlinkStreamGPSRawCov &);
 
 protected:
-	explicit MavlinkStreamGPSRawInt(Mavlink *mavlink) : MavlinkStream(mavlink),
+	explicit MavlinkStreamGPSRawCov(Mavlink *mavlink) : MavlinkStream(mavlink),
 		_gps_sub(_mavlink->add_orb_subscription(ORB_ID(vehicle_gps_position))),
 		_gps_time(0)
 	{}
@@ -1070,20 +1070,20 @@ protected:
 		struct vehicle_gps_position_s gps;
 
 		if (_gps_sub->update(&_gps_time, &gps)) {
-			mavlink_gps_raw_int_t msg = {};
+			mavlink_gps_raw_cov_t msg = {};
 
 			msg.time_usec = gps.timestamp;
 			msg.fix_type = gps.fix_type;
 			msg.lat = gps.lat;
 			msg.lon = gps.lon;
 			msg.alt = gps.alt;
-			msg.eph = gps.hdop * 100; //cm_uint16_from_m_float(gps.eph);
-			msg.epv = gps.vdop * 100; //cm_uint16_from_m_float(gps.epv);
-			msg.vel = cm_uint16_from_m_float(gps.vel_m_s),
-			msg.cog = _wrap_2pi(gps.cog_rad) * M_RAD_TO_DEG_F * 1e2f,
+			//msg.eph = gps.hdop * 100; //cm_uint16_from_m_float(gps.eph);
+			//msg.epv = gps.vdop * 100; //cm_uint16_from_m_float(gps.epv);
+			//msg.vel = cm_uint16_from_m_float(gps.vel_m_s),
+			//msg.cog = _wrap_2pi(gps.cog_rad) * M_RAD_TO_DEG_F * 1e2f,
 			msg.satellites_visible = gps.satellites_used;
 
-			mavlink_msg_gps_raw_int_send_struct(_mavlink->get_channel(), &msg);
+			mavlink_msg_gps_raw_cov_send_struct(_mavlink->get_channel(), &msg);
 		}
 	}
 };
@@ -1592,7 +1592,7 @@ protected:
 		if (_est_sub->update(&_est_time, &est)) {
 			mavlink_local_position_ned_cov_t msg = {};
 
-			msg.time_boot_ms = est.timestamp / 1000;
+			msg.time_usec = est.timestamp;
 			msg.x = est.states[0];
 			msg.y = est.states[1];
 			msg.z = est.states[2];
@@ -3237,7 +3237,7 @@ const StreamListItem *streams_list[] = {
 	new StreamListItem(&MavlinkStreamAttitude::new_instance, &MavlinkStreamAttitude::get_name_static, &MavlinkStreamAttitude::get_id_static),
 	new StreamListItem(&MavlinkStreamAttitudeQuaternion::new_instance, &MavlinkStreamAttitudeQuaternion::get_name_static, &MavlinkStreamAttitudeQuaternion::get_id_static),
 	new StreamListItem(&MavlinkStreamVFRHUD::new_instance, &MavlinkStreamVFRHUD::get_name_static, &MavlinkStreamVFRHUD::get_id_static),
-	new StreamListItem(&MavlinkStreamGPSRawInt::new_instance, &MavlinkStreamGPSRawInt::get_name_static, &MavlinkStreamGPSRawInt::get_id_static),
+	new StreamListItem(&MavlinkStreamGPSRawCov::new_instance, &MavlinkStreamGPSRawCov::get_name_static, &MavlinkStreamGPSRawCov::get_id_static),
 	new StreamListItem(&MavlinkStreamSystemTime::new_instance, &MavlinkStreamSystemTime::get_name_static, &MavlinkStreamSystemTime::get_id_static),
 	new StreamListItem(&MavlinkStreamTimesync::new_instance, &MavlinkStreamTimesync::get_name_static, &MavlinkStreamTimesync::get_id_static),
 	new StreamListItem(&MavlinkStreamGlobalPositionInt::new_instance, &MavlinkStreamGlobalPositionInt::get_name_static, &MavlinkStreamGlobalPositionInt::get_id_static),
