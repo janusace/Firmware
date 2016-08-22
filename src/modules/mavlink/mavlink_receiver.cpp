@@ -1062,7 +1062,6 @@ MavlinkReceiver::handle_message_local_position_ned_cov(mavlink_message_t *msg)
 	local_position.az = pos.az;
 	
 	// TODO yaw and rest of the crap
-
 	local_position.xy_global = globallocalconverter_initialized();
 	local_position.z_global = globallocalconverter_initialized();
 
